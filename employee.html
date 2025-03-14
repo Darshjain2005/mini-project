@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Portfolio</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <header>
+        <h1>Employee Portfolio</h1>
+        <nav>
+            <ul>
+                <li><a href="#about">About Me</a></li>
+                <li><a href="#skills">Skills</a></li>
+                <li><a href="#projects">Projects</a></li>
+                <li><a href="#certificates">Certificates</a></li>
+                <li><a href="#recommendations">Recommendations</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><a href="#resume">Resume</a></li>
+            </ul>
+        </nav>
+        <button id="logout-button">Logout</button>
+        <button id="chat-toggle">Chat</button> <!-- Chat Toggle Button -->
+    </header>
+
+    <section id="about">
+        <h2>About Me</h2>
+        <form id="about-me-form">
+            <textarea id="about-me" placeholder="Write about yourself..."></textarea>
+            <button type="submit">Save About Me</button>
+        </form>
+        <div id="about-content"></div>
+    </section>
+
+    <section id="skills">
+        <h2>Skills</h2>
+        <form id="skills-form"> 
+            <textarea id="skills-input" rows="3" placeholder="Add your skills one by one"></textarea>
+            <button type="submit">Add Skills</button>
+        </form>
+        <div id="skills-list"></div>
+    </section>
+
+    <section id="projects">
+        <h2>My Projects</h2>
+        <form id="project-form">
+            <input type="text" id="project-title" placeholder="Project Title" required>
+            <textarea id="project-description" placeholder="Project Description" required></textarea>
+            <button type="submit">Add Project</button>
+        </form>
+        <div id="projects-list"></div>
+    </section>
+
+    <section id="certificates">
+        <h2>Certificates</h2>
+        <form id="certificate-form" enctype="multipart/form-data">
+            <label for="certificate-title">Certificate Title</label>
+            <input type="text" id="certificate-title" required>
+            <label for="certificate-file">Upload Certificate</label>
+            <input type="file" id="certificate-file" accept="image/*,application/pdf" required>
+            <button type="submit">Add Certificate</button>
+        </form>
+         
+        <h3>Your Uploaded Certificates</h3>
+        <div id="certificates-list">
+        </div>
+
+    </section>
+
+    <section id="recommendations">
+        <h2>Recommendations</h2>
+        <div id="recommendationsList"></div>
+    </section>
+
+    <section id="contact">
+        <h2>Contact Me</h2>
+        <form id="contact-form">
+            <input type="email" id="contact-email" placeholder="Your Email" required>
+            <input type="text" id="contact-linkedin" placeholder="LinkedIn Profile" required>
+            <button type="submit">Save Contact Info</button>
+        </form>
+        <div id="contact-info"></div>
+    </section>
+
+    <!-- Chat Toggle Button -->
+    <button id="chat-toggle">Open Chat</button>
+
+    <!-- Chat Container (Initially Hidden) -->
+    <div id="chat-container">
+        <div id="chat-header">
+            <span>Chat with <span id="employer-name">Employer</span></span>
+            <button id="close-chat">X</button>
+        </div>
+        <div id="chat-box" data-receiver-id=""> </div> <!-- Employer ID will be set here -->
+        <input type="text" id="chat-input" placeholder="Type a message...">
+        <button id="send-message">Send</button>
+    </div>
+
+<section class="profile-section">
+    <button id="save-profile-button" onclick="saveProfile()">Save Profile</button>
+</section>
+
+
+    <button class="resume-button" onclick="window.location.href='resume-builder.html'">Generate Resume</button>
+
+    <script src="employee.js"></script>
+    <script>
+// ✅ Define socket globally so it's accessible from the console
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("✅ Employee Chat JavaScript Loaded!");
+
+    // ✅ Establish WebSocket connection
+    socket = new WebSocket("ws://localhost:3002");
+
+    let token = localStorage.getItem("authToken");
+    let userId = parseInt(localStorage.getItem("userId")); 
+    let role = localStorage.getItem("user_role") || "employee"; 
+
+    if (!token || isNaN(userId) || !role) {
+        console.error("❌ Missing authentication details. WebSocket authentication failed.");
+        return;
+    }
+
+    // ✅ Authenticate WebSocket connection
+    socket.onopen = () => {
+        socket.send(JSON.stringify({ type: "authenticate", userId, role }));
+    };
+
+    // ✅ Handle incoming messages
+    socket.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data);
+
+            // ✅ Ensure correct field names
+            const sender = data.sender;
+            const employerId = data.employerId;
+            const employeeId = data.employeeId;
+            const message = data.message;
+
+            if (!sender || !employerId || !employeeId) {
+                console.error("❌ senderId or receiverId is missing in the message!", data);
+                return;
+            }
+
+            // ✅ Determine sender name
+            if (sender === "employer") {
+                fetchEmployerName(employerId, (employerName) => {
+                    displayMessage(employerName, message, false);
+                });
+            } else {
+                displayMessage("You", message, true);
+            }
+        } catch (error) {
+            console.error("❌ Error parsing message:", error);
+        }
+    };
+
+    socket.onerror = (error) => {
+        console.error("❌ WebSocket Error:", error);
+    };
+
+    socket.onclose = () => {
+        console.log("❌ WebSocket Disconnected.");
+    };
+
+    document.getElementById("send-message").addEventListener("click", sendMessage);
+
+    let employerId = localStorage.getItem("chatEmployerId");
+    if (employerId && !isNaN(parseInt(employerId))) {
+        fetchChatHistory(userId, parseInt(employerId));
+    }
+});
+
+function sendMessage() {
+    const chatInput = document.getElementById("chat-input");
+    const message = chatInput.value.trim();
+
+    if (!message) return;
+
+    let receiverId = parseInt(localStorage.getItem("chatEmployerId"));
+
+    if (!receiverId || isNaN(receiverId)) {
+        alert("⚠️ You cannot send a message until an employer has messaged you first!");
+        return;
+    }
+
+    const chatMessage = {
+        type: "chat_message",
+        sender: "employee", 
+        employerId: receiverId, 
+        employeeId: userId, 
+        message: message,
+    };
+
+    socket.send(JSON.stringify(chatMessage));
+    displayMessage("You", message, true);
+    chatInput.value = "";
+}
+
+function displayMessage(sender, message, isSender) {
+    const chatBox = document.getElementById("chat-box");
+
+    const messageElement = document.createElement("div");
+    messageElement.classList.add("message");
+    messageElement.classList.add(isSender ? "sent" : "received");
+    messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
+
+    chatBox.appendChild(messageElement);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function fetchChatHistory(employeeId, employerId) {
+    fetch(`http://localhost:3001/get-messages/${employerId}/${employeeId}`)
+        .then(response => response.json())
+        .then(messages => {
+            if (!Array.isArray(messages) || messages.length === 0) {
+                return;
+            }
+
+            const chatBox = document.getElementById("chat-box");
+            chatBox.innerHTML = ""; 
+
+            messages.forEach(msg => {
+                if (msg.sender === "employer") {
+                    fetchEmployerName(msg.employer_id, (employerName) => {
+                        displayMessage(employerName, msg.message, false);
+                    });
+                } else {
+                    displayMessage("You", msg.message, true);
+                }
+            });
+        })
+        .catch(error => console.error("❌ Error fetching chat history:", error));
+}
+
+// ✅ Function to fetch employer's name
+function fetchEmployerName(employerId, callback) {
+    fetch(`http://localhost:3001/employer/${employerId}/name`) // ✅ Fixed Backend Port
+        .then(response => response.json())
+        .then(data => {
+            callback(data.name);
+        })
+        .catch(error => {
+            console.error("❌ Error fetching employer name:", error);
+            callback("Unknown Employer");
+        });
+}
+
+    </script>    
+</body>
+</html>

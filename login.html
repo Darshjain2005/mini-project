@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div class="container">
+        <h2>Login</h2>
+        <div id="role-selection">
+            <button onclick="showRole('employer')">Employer Login</button>
+            <button onclick="showRole('employee')">Employee Login</button>
+        </div>
+        
+        <div id="employer-form" class="hidden">
+            <h2>Employer Login</h2>
+            <form id="employer-login-form">
+                <div class="input-group">
+                    <label for="employer-username">Username</label>
+                    <input type="text" id="employer-username" name="username" required>
+                </div>
+                <div class="input-group">
+                    <label for="employer-password">Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="employer-password" name="password" required>
+                        <span class="toggle-password" onclick="togglePassword('employer-password', this)">👁️</span>
+                    </div>
+                </div>
+                <button type="submit">Login</button>
+                <p><a href="create-employer.html">Create New Employer Account</a></p>
+            </form>
+        </div>
+
+        <div id="employee-form" class="hidden">
+            <h2>Employee Login</h2>
+            <form id="employee-login-form">
+                <div class="input-group">
+                    <label for="employee-username">Username</label>
+                    <input type="text" id="employee-username" name="username" required>
+                </div>
+                <div class="input-group">
+                    <label for="employee-password">Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="employee-password" name="password" required>
+                        <span class="toggle-password" onclick="togglePassword('employee-password', this)">👁️</span>
+                    </div>
+                </div>
+                <button type="submit">Login</button>
+                <p><a href="create-employee.html">Create New Employee Account</a></p>
+            </form>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

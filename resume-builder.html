@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resume Maker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f0f0f0;
+    }
+    .container {
+      width: 80%;
+      margin: 20px auto;
+    }
+    .form-section, .resume-section {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .form-section h2, .resume-section h2 {
+      margin-top: 0;
+      color: #1976d2;
+    }
+    input, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    button {
+      background-color: #1976d2;
+      color: white;
+      cursor: pointer;
+      border: none;
+    }
+    button:hover {
+      background-color: #145aa6;
+    }
+    .resume-preview {
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 8px;
+      background-color: white;
+    }
+    .resume-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #1976d2;
+      padding-bottom: 10px;
+    }
+    .resume-photo img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .resume-contact {
+      flex-grow: 1;
+      text-align: left;
+      margin-left: 20px;
+    }
+    .resume-body {
+      display: flex;
+      margin-top: 20px;
+      gap: 20px;
+    }
+    .resume-left, .resume-right {
+      flex: 1;
+    }
+    .resume-left h3, .resume-right h3 {
+      color: #1976d2;
+      margin-bottom: 5px;
+    }
+    .resume-left p, .resume-right p {
+      margin: 0 0 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="form-section">
+    <h2>Resume Form</h2>
+    <input type="text" id="name" placeholder="Full Name" required>
+    <input type="email" id="email" placeholder="Email Address" required>
+    <input type="text" id="phone" placeholder="Phone Number" required>
+    <textarea id="profile" placeholder="Profile Summary" rows="3"></textarea>
+    <textarea id="employmentHistory" placeholder="Employment History" rows="5"></textarea>
+    <textarea id="education" placeholder="Education Details" rows="3"></textarea>
+    <textarea id="skills" placeholder="Skills (e.g., Project Management, IT, etc.)" rows="3"></textarea>
+    <textarea id="languages" placeholder="Languages (e.g., French: Highly proficient)" rows="2"></textarea>
+    <label for="photo">Upload Photo:</label>
+    <input type="file" id="photo" accept="image/*" onchange="loadPhoto(event)">
+    
+    <button onclick="generateResume()">Preview Resume</button>
+    <button onclick="downloadResume()">Download Resume</button>
+    <button onclick="goBackToEmployeePage()">Back to Employee Page</button> <!-- 🔹 Added Back Button -->
+  </div>
+
+  <div class="resume-section">
+    <h2>Resume Preview</h2>
+    <div id="resumePreview" class="resume-preview">
+      <div class="resume-header">
+        <div class="resume-photo">
+          <img id="previewPhoto" src="" alt="Your Photo">
+        </div>
+        <div class="resume-contact">
+          <h1 id="previewName">Your Name</h1>
+          <p id="previewEmail">Your Email</p>
+          <p id="previewPhone">Your Phone</p>
+        </div>
+      </div>
+      <div class="resume-body">
+        <div class="resume-left">
+          <div>
+            <h3>Profile</h3>
+            <p id="previewProfile">Your profile summary goes here.</p>
+          </div>
+          <div>
+            <h3>Skills</h3>
+            <p id="previewSkills">Your skills go here.</p>
+          </div>
+          <div>
+            <h3>Languages</h3>
+            <p id="previewLanguages">Your language proficiency goes here.</p>
+          </div>
+        </div>
+        <div class="resume-right">
+          <div>
+            <h3>Employment History</h3>
+            <p id="previewEmploymentHistory">Your employment history goes here.</p>
+          </div>
+          <div>
+            <h3>Education</h3>
+            <p id="previewEducation">Your education details go here.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+<script>
+  function loadPhoto(event) {
+    const previewPhoto = document.getElementById('previewPhoto');
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        previewPhoto.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  function generateResume() {
+    document.getElementById('previewName').innerText = document.getElementById('name').value;
+    document.getElementById('previewEmail').innerText = document.getElementById('email').value;
+    document.getElementById('previewPhone').innerText = document.getElementById('phone').value;
+    document.getElementById('previewProfile').innerText = document.getElementById('profile').value;
+    document.getElementById('previewEmploymentHistory').innerText = document.getElementById('employmentHistory').value;
+    document.getElementById('previewEducation').innerText = document.getElementById('education').value;
+    document.getElementById('previewSkills').innerText = document.getElementById('skills').value;
+    document.getElementById('previewLanguages').innerText = document.getElementById('languages').value;
+  }
+
+  function downloadResume() {
+    const element = document.getElementById('resumePreview');
+    const options = {
+      margin: 0.5,
+      filename: 'resume.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+    html2pdf().set(options).from(element).save();
+  }
+
+  function goBackToEmployeePage() {
+    window.location.href = 'employee.html'; 
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employer Dashboard</title>
+    <link rel="stylesheet" href="employer.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</head>
+<body>
+    <header>
+        <h1>Employer Dashboard</h1>
+        <button onclick="localStorage.removeItem('token'); localStorage.removeItem('userId'); window.location.href='login.html';"> Logout
+        </button> 
+    </header>
+
+    <section id="search">
+        <h2>Search for Individuals</h2>
+        <form id="search-form" onsubmit="searchEmployees(event)">
+            <input list="skills" id="search-skills" placeholder="Search by Skills">
+            <datalist id="skills">
+                <option value="JavaScript">
+                <option value="Python">
+                <option value="Java">
+                <option value="C++">
+                <option value="React">
+                <option value="Node.js">
+                <option value="SQL">
+                <option value="Machine Learning">
+            </datalist>
+            <input type="text" id="search-certifications" placeholder="Search by Certifications" required>
+            <button type="submit">Search</button>
+        </form>
+        <div id="search-results"></div>
+    </section>
+
+ <!-- Employer Chat Window -->
+ <div id="employer-chat-container" class="hidden">
+    <div id="employer-chat-header">
+        <h3 id="chat-employee-name">Chat</h3>
+        <button id="employer-close-chat">✖</button>
+    </div>
+    <div id="employer-chat-box"></div>
+    <input id="employer-chat-input" type="text" placeholder="Type a message...">
+    <button id="employer-send-message">Send</button>
+</div>
+
+    <!-- Recommendation Section (Initially Hidden) -->
+    <section id="recommendation-section" style="display: none;">
+        <h2>Give a Recommendation</h2>
+        <textarea id="recommendationMessage" placeholder="Write a recommendation..."></textarea>
+        <select id="recommendationRating">
+            <option value="5">⭐⭐⭐⭐⭐</option>
+            <option value="4">⭐⭐⭐⭐</option>
+            <option value="3">⭐⭐⭐</option>
+            <option value="2">⭐⭐</option>
+            <option value="1">⭐</option>
+        </select>
+        <button onclick="submitRecommendation()">Submit</button>
+    </section> 
+    
+    <script src="employer.js"></script>
+    <script>
+
+document.addEventListener("DOMContentLoaded", () => {
+    const chatContainer = document.getElementById("employer-chat-container");
+    const closeChatButton = document.getElementById("employer-close-chat");
+
+    if (closeChatButton) {
+        closeChatButton.addEventListener("click", () => {
+            chatContainer.classList.add("hidden");
+        });
+    }
+});
+
+// ✅ Store employer ID in session storage
+if (!sessionStorage.getItem("employer_id") && localStorage.getItem("userId")) {
+    sessionStorage.setItem("employer_id", localStorage.getItem("userId"));
+    console.log("Employer ID set in sessionStorage:", sessionStorage.getItem("employer_id"));
+}
+
+// ✅ Function to search employees
+function searchEmployees(event) {
+    event.preventDefault();
+    const skills = document.getElementById("search-skills").value.trim();
+    const certifications = document.getElementById("search-certifications").value.trim();
+
+    if (!skills && !certifications) {
+        Swal.fire("Error", "Please enter skills or certifications to search!", "error");
+        return;
+    }
+
+    fetch(`http://localhost:3001/search-employees?skills=${encodeURIComponent(skills)}&certifications=${encodeURIComponent(certifications)}`)
+        .then(response => response.json())
+        .then(data => {
+            const resultsDiv = document.getElementById("search-results");
+            resultsDiv.innerHTML = "";
+
+            if (!data || data.length === 0) {
+                resultsDiv.innerHTML = "<p>No matching employees found.</p>";
+                return;
+            }
+
+            resultsDiv.innerHTML = data.map(emp => `
+                <div class="employee-card">
+                    <h3>${emp.full_name}</h3>
+                    <p><strong>Skills:</strong> ${emp.skills}</p>
+                    <p><strong>Certifications:</strong> ${emp.certifications}</p>
+                    <button onclick="showRecommendationForm(${emp.id})">Recommend</button>
+                    <button class="chat-with-employee" data-employee-id="${emp.id}" data-employee-name="${emp.full_name}">Chat</button>
+                </div>
+            `).join('');
+
+            // Attach event listeners to chat buttons dynamically
+            document.querySelectorAll(".chat-with-employee").forEach(button => {
+                button.addEventListener("click", function() {
+                    let employeeId = this.getAttribute("data-employee-id");
+                    let employeeName = this.getAttribute("data-employee-name");
+
+                    document.getElementById("chat-employee-name").textContent = employeeName;
+                    document.getElementById("employer-chat-container").classList.remove("hidden");
+
+                    // ✅ Store employee ID in sessionStorage
+                    sessionStorage.setItem("chat_employee_id", employeeId);
+
+                    // ✅ Load chat history
+                    fetchChatHistory(employeeId);
+                });
+            });
+        })
+        .catch(error => {
+            console.error("Error fetching employees:", error);
+            Swal.fire("Error", "Could not retrieve search results. Try again later.", "error");
+        });
+}
+
+// ✅ Function to show the recommendation form
+function showRecommendationForm(employeeId) {
+    document.getElementById("recommendation-section").style.display = "block";
+    document.getElementById("recommendation-section").setAttribute("data-employee-id", employeeId);
+}
+
+// ✅ Function to submit a recommendation
+function submitRecommendation() {
+    const employeeId = document.getElementById("recommendation-section").getAttribute("data-employee-id");
+    const employerId = sessionStorage.getItem("employer_id"); 
+    const message = document.getElementById('recommendationMessage').value.trim();
+    const rating = document.getElementById('recommendationRating').value;
+
+    if (!employeeId || !employerId || !message || !rating) {
+        Swal.fire("Error", "All fields are required!", "error");
+        return;
+    }
+
+    fetch('http://localhost:3001/add-recommendation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ employer_id: employerId, employee_id: employeeId, message, rating })
+    })
+    .then(response => response.json())
+    .then(data => {
+        Swal.fire("Success!", data.message, "success");
+        document.getElementById("recommendation-section").style.display = "none";
+        document.getElementById('recommendationMessage').value = "";
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        Swal.fire("Error", "Could not submit the recommendation. Try again later.", "error");
+    });
+}
+
+// ✅ WebSocket connection with auto-reconnect
+let socket;
+function connectWebSocket() {
+    socket = new WebSocket('ws://localhost:3002');
+
+    socket.onopen = function () {
+        console.log("✅ WebSocket Connected");
+
+        // ✅ Authenticate user when connection opens
+        const userId = localStorage.getItem("userId");
+        const role = localStorage.getItem("role");
+
+        if (!userId || !role) {
+            console.error("❌ Authentication failed: Missing userId or role in localStorage");
+        } else {
+            console.log("✅ Sending authentication:", { userId, role });
+
+            socket.send(JSON.stringify({
+                type: "authenticate",
+                userId: parseInt(userId),  // Ensure userId is an integer
+                role: role
+            }));
+        }
+    };
+
+    // ✅ Receive messages in real-time from WebSocket
+// ✅ Handle incoming messages
+socket.onmessage = (event) => {
+    console.log("📩 Raw WebSocket Message Received:", event.data);
+
+    try {
+        const data = JSON.parse(event.data);
+        console.log("✅ Parsed Message:", data);
+
+        const senderId = data.senderId;
+        const receiverId = data.receiverId;
+        const message = data.message;
+
+        console.log(`🔍 Received from senderId: ${senderId} → receiverId: ${receiverId}`);
+
+        // ✅ If message is from employer, store employer ID in localStorage
+        if (data.senderRole === "employer") {
+            localStorage.setItem("chatEmployerId", senderId); // Save employer ID
+
+            fetchEmployerName(senderId, (employerName) => {
+                displayMessage(employerName, message, false);
+            });
+
+            // ✅ Update receiver ID in chat-box attribute
+            document.getElementById("chat-box").setAttribute("data-receiver-id", senderId);
+        } else {
+            displayMessage("You", message, true);
+        }
+    } catch (error) {
+        console.error("❌ Error parsing message:", error);
+    }
+};
+
+
+    socket.onerror = (error) => {
+        console.error("❌ WebSocket Error:", error);
+    };
+
+    socket.onclose = () => {
+        console.warn("❌ WebSocket Disconnected. Reconnecting in 3 seconds...");
+        setTimeout(connectWebSocket, 3000); // Auto-reconnect after 3s
+    };
+}
+
+// ✅ Initial WebSocket connection
+connectWebSocket();
+
+// ✅ Function to fetch chat history
+function fetchChatHistory(employeeId) {
+    const chatBox = document.getElementById("employer-chat-box");
+    if (!chatBox) {
+        console.error("❌ Chat box not found!");
+        return;
+    }
+
+    const employerId = sessionStorage.getItem("employer_id");
+
+    if (!employeeId || !employerId) {
+        console.error("❌ Employer or Employee ID is missing");
+        return;
+    }
+
+    fetch(`http://localhost:3001/get-messages/${employerId}/${employeeId}`)
+        .then(response => response.json())
+        .then(messages => {
+            chatBox.innerHTML = "";
+            messages.forEach(({ sender, message }) => {
+                displayMessage(sender === "employer" ? "You" : "Employee", message, sender === "employer");
+            });
+            chatBox.scrollTop = chatBox.scrollHeight;
+        })
+        .catch(error => console.error("❌ Error fetching messages:", error));
+}
+
+// ✅ Send message on button click
+document.getElementById("employer-send-message").addEventListener("click", sendMessage);
+
+// ✅ Send message on Enter key
+document.getElementById("employer-chat-input").addEventListener("keypress", (event) => {
+    if (event.key === "Enter") sendMessage();
+});
+
+// ✅ Function to send messages
+function sendMessage() {
+    let inputField = document.getElementById("employer-chat-input");
+    let chatBox = document.getElementById("employer-chat-box");
+    let message = inputField.value.trim();
+    const employeeId = sessionStorage.getItem("chat_employee_id");
+    const employerId = sessionStorage.getItem("employer_id");
+
+    if (!chatBox) {
+        console.error("❌ Chat box not found!");
+        return;
+    }
+
+    if (!employerId || !employeeId) {
+        console.error("❌ Employer or Employee ID is missing");
+        return;
+    }
+
+    if (message !== "") {
+        if (!socket || socket.readyState !== WebSocket.OPEN) {
+            console.error("❌ Cannot send message: WebSocket is not connected");
+            return;
+        }
+
+        const chatMessage = {
+            type: "chat_message",
+            sender: "employer",
+            employerId: employerId,
+            employeeId: employeeId,
+            message: message
+        };
+
+        console.log("🚀 Sending message:", chatMessage);
+        socket.send(JSON.stringify(chatMessage));
+
+        // ✅ Instantly display the message in sender's chat window
+        displayMessage("You", message, true);
+
+        inputField.value = ""; // ✅ Clear input after sending
+    }
+}
+
+// ✅ Function to display messages in chat box
+function displayMessage(sender, message, isSender) {
+    let chatBox = document.getElementById("employer-chat-box");
+    if (!chatBox) {
+        console.error("❌ Chat box not found!");
+        return;
+    }
+
+    let messageElement = document.createElement("div");
+    messageElement.classList.add("chat-message");
+
+    if (isSender) {
+        messageElement.classList.add("employer-message");
+    } else {
+        messageElement.classList.add("employee-message");
+    }
+
+    // ✅ Use <span> for sender name and <p> for message
+    messageElement.innerHTML = `<span><strong>${sender}:</strong></span> <p>${message}</p>`;
+
+    chatBox.appendChild(messageElement);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+    </script>    
+</body>
+</html>
