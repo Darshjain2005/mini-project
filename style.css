@@ -1,0 +1,147 @@
+body {
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    background: url('https://static.vecteezy.com/system/resources/previews/004/243/021/large_2x/abstract-template-background-white-and-bright-blue-squares-overlapping-with-halftone-and-texture-free-vector.jpg') no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    width: 100%;
+    max-width: 350px; 
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.5); /* transparent background */
+    border-radius: 12px; 
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); 
+    border: 2px solid rgba(25, 118, 210, 0.5); /* blue border */
+    box-sizing: border-box; /* Ensure padding is included in width */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+h2 {
+    text-align: center;
+    color: #1976d2; /* Light blue color */
+    margin-bottom: 15px;
+    font-size: 24px;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #1976d2; /* Light blue color */
+    color: white;
+    border: none;
+    border-radius: 8px; 
+    cursor: pointer;
+    font-size: 18px;
+    margin: 10px 0;
+    transition: background-color 0.3s ease;
+    box-sizing: border-box; /* Ensure padding is included in width */
+}
+
+button:hover {
+    background-color: #1565c0; /* Darker blue */
+}
+
+.hidden {
+    display: none;
+}
+
+.input-group {
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.input-group label {
+    display: block;
+    font-weight: bold;
+    color: #1976d2; /* Light blue color */
+    margin-bottom: 8px;
+    font-size: 16px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px; 
+    font-size: 16px;
+    background-color: rgba(255, 255, 255, 0.8); /* Slightly transparent */
+    box-sizing: border-box; /* Ensure padding is included in width */
+}
+
+button[type="submit"] {
+    background-color: #1976d2; /* Light blue color */
+}
+
+button[type="submit"]:hover {
+    background-color: #1565c0; /* Darker blue on hover */
+}
+
+p {
+    text-align: center;
+    margin-top: 15px;
+}
+
+p a {
+    color: #1976d2; /* Light blue color for links */
+    text-decoration: none;
+    font-weight: bold;
+}
+
+p a:hover {
+    text-decoration: underline;
+}
+
+/* Style for password input with eyeball icon */
+.password-group {
+    position: relative;
+}
+
+.password-group input {
+    padding-right: 40px; /* Space for the eyeball icon */
+}
+
+.toggle-password:hover {
+    color: #1565c0; /* Darker blue on hover */
+}
+
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-wrapper input {
+    width: 100%;
+    padding-right: 40px; /* Extra space to avoid text overlapping with the icon */
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    cursor: pointer;
+    font-size: 20px; /* Adjust the size of the eye icon */
+    color: #1976d2; /* Same light blue color for consistency */
+}
+
+#password-guidelines {
+    list-style-type: none;
+    padding: 0;
+    font-size: 0.9em;
+}
+
+#password-guidelines li {
+    color: red;
+}
+
+#password-guidelines li.valid {
+    color: green;
+}
+

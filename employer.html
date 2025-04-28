@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employer Dashboard</title>
+    <link rel="stylesheet" href="employer.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</head>
+<body>
+    <header>
+        <h1>Employer Dashboard</h1>
+        <div id="employer-buttons">
+            <button onclick="localStorage.removeItem('token'); localStorage.removeItem('userId'); window.location.href='login.html';">Logout</button>
+            <button id="employer-chat-toggle">Chat</button>  
+        </div>
+    </header>    
+
+    <section id="search">
+        <h2>Search for Individuals</h2>
+        <form id="search-form" onsubmit="searchEmployees(event)">
+            <input list="skills" id="search-skills" placeholder="Search by Skills">
+            <datalist id="skills">
+                <option value="JavaScript">
+                <option value="Python">
+                <option value="Java">
+                <option value="C++">
+                <option value="React">
+                <option value="Node.js">
+                <option value="SQL">
+                <option value="Machine Learning">
+            </datalist>
+            <input type="text" id="search-certifications" placeholder="Search by Certifications" required>
+            <button type="submit">Search</button>
+        </form>
+        <div id="search-results"></div>
+    </section>
+
+
+    
+
+<!-- Employer Chat Window (Initially Hidden) -->
+<div id="employer-chat-container" class="hidden">
+    <div id="employer-chat-header">
+        <span>Chat with <span id="chat-employee-name">Employee</span></span>
+        <button id="employer-close-chat">✖</button>
+    </div>
+    <div id="employer-chat-box"></div>
+    <input id="employer-chat-input" type="text" placeholder="Type a message...">
+    <button id="employer-send-message">Send</button>
+</div>
+
+
+    <!-- Recommendation Section (Initially Hidden) -->
+    <section id="recommendation-section" style="display: none;">
+        <h2>Give a Recommendation</h2>
+        <textarea id="recommendationMessage" placeholder="Write a recommendation..."></textarea>
+        <select id="recommendationRating">
+            <option value="5">⭐⭐⭐⭐⭐</option>
+            <option value="4">⭐⭐⭐⭐</option>
+            <option value="3">⭐⭐⭐</option>
+            <option value="2">⭐⭐</option>
+            <option value="1">⭐</option>
+        </select>
+        <button onclick="submitRecommendation()">Submit</button>
+    </section> 
+    
+    <script src="employer.js"></script>
+    <script>
+
+document.addEventListener("DOMContentLoaded", () => {
+    const employerChatToggle = document.getElementById("employer-chat-toggle"); // Toggle button
+const employerChatContainer = document.getElementById("employer-chat-container");
+const employerCloseChat = document.getElementById("employer-close-chat");
+
+// Hide chat container initially
+employerChatContainer.style.display = "none";
+
+// Toggle Chat Window
+employerChatToggle.addEventListener("click", function () {
+    if (employerChatContainer.style.display === "none" || employerChatContainer.style.display === "") {
+        employerChatContainer.style.display = "block"; // Show chat
+    } else {
+        employerChatContainer.style.display = "none"; // Hide chat
+    }
+});
+
+// Close Chat Window
+employerCloseChat.addEventListener("click", function () {
+    employerChatContainer.style.display = "none";
+});
+
+    }
+);
+
+// ✅ Store employer ID in session storage
+if (!sessionStorage.getItem("employer_id") && localStorage.getItem("userId")) {
+    sessionStorage.setItem("employer_id", localStorage.getItem("userId"));
+    console.log("Employer ID set in sessionStorage:", sessionStorage.getItem("employer_id"));
+}
+
+// ✅ Function to search employees
+function searchEmployees(event) {
+    event.preventDefault();
+    const skills = document.getElementById("search-skills").value.trim();
+    const certifications = document.getElementById("search-certifications").value.trim();
+
+    if (!skills && !certifications) {
+        Swal.fire("Error", "Please enter skills or certifications to search!", "error");
+        return;
+    }
+
+    fetch(`http://localhost:3001/search-employees?skills=${encodeURIComponent(skills)}&certifications=${encodeURIComponent(certifications)}`)
+        .then(response => response.json())
+        .then(data => {
+            const resultsDiv = document.getElementById("search-results");
+            resultsDiv.innerHTML = "";
+
+            if (!data || data.length === 0) {
+                resultsDiv.innerHTML = "<p>No matching employees found.</p>";
+                return;
+            }
+
+            resultsDiv.innerHTML = data.map(emp => `
+                <div class="employee-card">
+                    <h3>${emp.full_name}</h3>
+                    <p><strong>Skills:</strong> ${emp.skills}</p>
+                    <p><strong>Certifications:</strong> ${emp.certifications}</p>
+                    <button onclick="showRecommendationForm(${emp.id})">Recommend</button>
+                    <button class="chat-with-employee" data-employee-id="${emp.id}" data-employee-name="${emp.full_name}">Chat</button>
+                </div>
+            `).join('');
+
+            // Attach event listeners to chat buttons dynamically
+            document.querySelectorAll(".chat-with-employee").forEach(button => {
+                button.addEventListener("click", function() {
+                    let employeeId = this.getAttribute("data-employee-id");
+                    let employeeName = this.getAttribute("data-employee-name");
+
+                    document.getElementById("chat-employee-name").textContent = employeeName;
+                    document.getElementById("employer-chat-container").classList.remove("hidden");
+
+                    // ✅ Store employee ID in sessionStorage
+                    sessionStorage.setItem("chat_employee_id", employeeId);
+
+                    // ✅ Load chat history
+                    fetchChatHistory(employeeId);
+                });
+            });
+        })
+        .catch(error => {
+            console.error("Error fetching employees:", error);
+            Swal.fire("Error", "Could not retrieve search results. Try again later.", "error");
+        });
+}
+
+// Function to show the recommendation form
+function showRecommendationForm(employeeId) {
+    document.getElementById("recommendation-section").style.display = "block";
+    document.getElementById("recommendation-section").setAttribute("data-employee-id", employeeId);
+}
+
+//  Function to submit a recommendation
+function submitRecommendation() {
+    const employeeId = document.getElementById("recommendation-section").getAttribute("data-employee-id");
+    const employerId = sessionStorage.getItem("employer_id"); 
+    const message = document.getElementById('recommendationMessage').value.trim();
+    const rating = document.getElementById('recommendationRating').value;
+
+    if (!employeeId || !employerId || !message || !rating) {
+        Swal.fire("Error", "All fields are required!", "error");
+        return;
+    }
+
+    fetch('http://localhost:3001/add-recommendation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ employer_id: employerId, employee_id: employeeId, message, rating })
+    })
+    .then(response => response.json())
+    .then(data => {
+        Swal.fire("Success!", data.message, "success");
+        document.getElementById("recommendation-section").style.display = "none";
+        document.getElementById('recommendationMessage').value = "";
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        Swal.fire("Error", "Could not submit the recommendation. Try again later.", "error");
+    });
+}
+
+let socket;
+let userId;
+
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("✅ Employer Chat JavaScript Loaded!");
+
+    socket = new WebSocket("ws://localhost:3002");
+
+    userId = parseInt(localStorage.getItem("userId"));
+    let role = localStorage.getItem("user_role") || "employer";
+
+    if (!userId || !role) {
+        console.error("❌ Missing auth details for WebSocket");
+        return;
+    }
+
+    socket.onopen = () => {
+        console.log("✅ WebSocket Connected");
+        socket.send(JSON.stringify({ type: "authenticate", userId, role }));
+    };
+
+    socket.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data);
+            console.log("📩 Message Received:", data);
+
+            const sender = data.sender;
+            const employerId = data.employerId;
+            const employeeId = data.employeeId;
+            const message = data.message;
+
+            if (!sender || !employerId || !employeeId) {
+                console.error("❌ Missing sender/receiver info");
+                return;
+            }
+
+            if (sender === "employee") {
+                sessionStorage.setItem("chat_employee_id", employeeId);
+                fetchEmployeeName(employeeId, (employeeName) => {
+                    displayMessage(employeeName, message, false);
+                });
+            } else {
+                displayMessage("You", message, true);
+            }
+
+        } catch (error) {
+            console.error("❌ Error parsing message:", error);
+        }
+    };
+
+    socket.onerror = (error) => {
+        console.error("❌ WebSocket error:", error);
+    };
+
+    socket.onclose = () => {
+        console.warn("⚠️ WebSocket disconnected");
+    };
+
+    document.getElementById("employer-send-message").addEventListener("click", sendMessage);
+
+    let employeeId = sessionStorage.getItem("chat_employee_id");
+    if (employeeId && !isNaN(parseInt(employeeId))) {
+        fetchChatHistory(parseInt(employeeId));
+    }
+});
+
+function sendMessage() {
+    const inputField = document.getElementById("employer-chat-input");
+    const message = inputField.value.trim();
+    const receiverId = sessionStorage.getItem("chat_employee_id");
+
+    if (!receiverId || isNaN(parseInt(receiverId))) {
+        alert("⚠️ No employee selected to chat with.");
+        return;
+    }
+
+    if (!userId || isNaN(userId)) {
+        console.error("❌ Employer userId not set!");
+        return;
+    }
+
+    if (message === "") return;
+
+    const chatMessage = {
+        type: "chat_message",
+        sender: "employer",
+        employerId: userId,
+        employeeId: parseInt(receiverId),
+        message: message
+    };
+
+    socket.send(JSON.stringify(chatMessage));
+    displayMessage("You", message, true);
+    inputField.value = "";
+}
+
+function displayMessage(sender, message, isSender) {
+    const chatBox = document.getElementById("employer-chat-box");
+
+    const messageElement = document.createElement("div");
+    messageElement.classList.add("chat-message");
+    messageElement.classList.add(isSender ? "employer-message" : "employee-message");
+    messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
+
+    chatBox.appendChild(messageElement);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function fetchChatHistory(employeeId) {
+    fetch(`http://localhost:3001/get-messages/${userId}/${employeeId}`)
+        .then(response => response.json())
+        .then(messages => {
+            const chatBox = document.getElementById("employer-chat-box");
+            chatBox.innerHTML = "";
+
+            let messagePromises = messages.map((msg) => {
+                return new Promise((resolve) => {
+                    if (msg.sender === "employee") {
+                        fetchEmployeeName(msg.employee_id, (employeeName) => {
+                            resolve({ name: employeeName, message: msg.message, isSender: false });
+                        });
+                    } else {
+                        resolve({ name: "You", message: msg.message, isSender: true });
+                    }
+                });
+            });
+
+            Promise.all(messagePromises).then((formattedMessages) => {
+                formattedMessages.forEach((msg) => {
+                    displayMessage(msg.name, msg.message, msg.isSender);
+                });
+            });
+        })
+        .catch(err => console.error("❌ Error loading history:", err));
+}
+
+function fetchEmployeeName(employeeId, callback) {
+    fetch(`http://localhost:3001/employee/${employeeId}/name`)
+        .then(response => response.json())
+        .then(data => {
+            callback(data.name);
+        })
+        .catch(error => {
+            console.error("❌ Error fetching employee name:", error);
+            callback("Unknown Employee");
+        });
+}
+
+    </script>    
+</body>
+</html>

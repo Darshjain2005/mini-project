@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Employee Account</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div class="container">
+        <h2>Create Employee Account</h2>
+        <form id="create-employee-form">
+            <div class="input-group">
+                <label for="employee-name">Full Name</label>
+                <input type="text" id="employee-name" name="full-name" required>
+            </div>
+            <div class="input-group">
+                <label for="employee-email">Email</label>
+                <input type="email" id="employee-email" name="email" required>
+            </div>
+            <div class="input-group">
+                <label for="employee-username">Username</label>
+                <input type="text" id="employee-username" name="username" required>
+            </div>
+            <div class="input-group">
+                <label for="employee-password">Password</label>
+                <input type="password" id="employee-password" name="password" required>
+                <ul id="password-guidelines" style="display: none;">
+                    <li id="min-char">At least 8 characters</li>
+                    <li id="uppercase">At least one uppercase letter</li>
+                    <li id="lowercase">At least one lowercase letter</li>
+                    <li id="special-char">At least one special character</li>
+                </ul>
+            </div>
+            <div class="input-group">
+                <label for="confirm-password">Confirm Password</label>
+                <input type="password" id="confirm-password" name="confirm-password" required>
+            </div>
+            <button type="submit">Create Employee Account</button>
+        </form>
+        <p>Already have an employee account? <a href="login.html">Login here</a></p>
+    </div>
+    <div id="loading-indicator" style="display: none;">Loading...</div>
+
+    <script src="employee.js"></script>
+</body>
+</html>

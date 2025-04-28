@@ -1,0 +1,427 @@
+/* General Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: #f8f9fa;
+    color: #333;
+    line-height: 1.6;
+    padding-top: 80px;
+    overflow-x: hidden;
+}
+
+/* Header */
+header {
+    background: #0073e6;
+    color: #fff;
+    padding: 15px 20px;
+    text-align: center;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    animation: slide-down 0.8s ease-out;
+}
+
+@keyframes slide-down {
+    from {
+        transform: translateY(-100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+header h1 {
+    margin-bottom: 10px;
+    font-size: 1.8rem;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+nav ul li {
+    display: inline;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+nav ul li a:hover {
+    color: #ffcc00;
+}
+
+/* Buttons */
+button {
+    background: #0073e6;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background 0.3s, transform 0.2s;
+}
+
+button:hover {
+    background: #005bb5;
+    transform: scale(1.05);
+}
+
+/* Sections */
+section {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fade-in 1s ease-out forwards;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+section h2 {
+    color: #0073e6;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 1.5rem;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    resize: vertical;
+}
+
+textarea {
+    min-height: 80px;
+}
+
+/* Resume Button */
+.resume-button {
+    display: block;
+    width: 200px;
+    margin: 20px auto;
+    text-align: center;
+    font-size: 18px;
+    padding: 12px;
+    background: #ffcc00;
+    color: black;
+    font-weight: bold;
+    border-radius: 5px;
+    transition: background 0.3s, transform 0.2s;
+}
+
+.resume-button:hover {
+    background: #e6b800;
+    transform: scale(1.05);
+}
+
+/* Logout Button */
+#logout-button {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 12px 20px;
+    background: #ff4d4d;
+    border-radius: 8px;
+    transition: background 0.3s, transform 0.2s;
+}
+
+#logout-button:hover {
+    background: #cc0000;
+    transform: scale(1.05);
+}
+
+/* Chat Button */
+#chat-toggle {
+    position: absolute;
+    top: 65px; /* Below logout button */
+    right: 20px;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 10px 15px;
+    background: #0073e6;
+    color: white;
+    border-radius: 8px;
+    transition: background 0.3s, transform 0.2s;
+    border: none;
+    cursor: pointer;
+}
+
+#chat-toggle:hover {
+    background: #005bb5;
+    transform: scale(1.05);
+}
+
+/* Chat Container */
+#chat-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 300px;
+    background: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideUp 0.5s ease-in-out;
+}
+
+/* Slide-Up Animation */
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Hidden Class for Chat */
+.hidden {
+    display: none;
+}
+
+/* Chat Header - ✅ Blue */
+#chat-header {
+    background: #007bff;  /* Blue */
+    color: white;
+    padding: 10px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Close Button */
+#close-chat {
+    background: red;
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+/* Chat Box */
+#chat-box {
+    height: 250px;
+    padding: 10px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+}
+
+/* Smooth Scroll */
+#chat-box::-webkit-scrollbar {
+    width: 6px;
+}
+
+#chat-box::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 6px;
+}
+
+/* ✅ Employer Messages (Right Aligned - Sender, Blue) */
+#chat-box .sent {
+    align-self: flex-end;
+    background: #007bff; /* Blue */
+    color: white;
+    text-align: left;
+    border-radius: 12px 12px 0px 12px;
+    padding: 8px 12px;
+    max-width: 75%;
+    margin: 5px 0;
+    word-wrap: break-word;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* ✅ Employee Messages (Left Aligned - Receiver, Light Green) */
+#chat-box .received {
+    align-self: flex-start;
+    background: #81f192; /* Light Green */
+    color: black;
+    text-align: left;
+    border-radius: 12px 12px 12px 0px;
+    padding: 8px 12px;
+    max-width: 75%;
+    margin: 5px 0;
+    word-wrap: break-word;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Smooth Fade-in Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Chat Input Field */
+#chat-input {
+    width: calc(100% - 75px);
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin: 10px;
+    outline: none;
+    transition: border 0.3s;
+}
+
+#chat-input:focus {
+    border-color: #007bff; /* Blue */
+}
+
+/* Send Button - ✅ Blue */
+#send-message {
+    padding: 8px 12px;
+    background: #007bff; /* Blue */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 10px;
+    transition: background 0.3s, transform 0.2s;
+}
+
+#send-message:hover {
+    background: #0056b3; /* Darker Blue */
+    transform: scale(1.05);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    nav ul {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    section {
+        width: 90%;
+    }
+
+    button {
+        width: 100%;
+    }
+
+    /* Adjust Logout and Chat Button for Smaller Screens */
+    #logout-button {
+        position: fixed;
+        top: 15px;
+        right: 10px;
+    }
+
+    #chat-toggle {
+        position: fixed;
+        top: 60px; /* Below Logout Button */
+        right: 10px;
+    }
+
+    /* Chat Container for Mobile */
+    #chat-container {
+        width: 250px;
+        bottom: 10px;
+        right: 10px;
+    }
+}
+
+/* Save Profile Section */
+.profile-section {
+    text-align: center;
+    padding: 10px;
+    background: white;
+    width: fit-content;
+    margin: 20px auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Save Profile Button */
+#save-profile-button {
+    display: block;
+    width: 200px;
+    text-align: center;
+    font-size: 18px;
+    padding: 12px;
+    background: #0073e6;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    transition: background 0.3s, transform 0.2s;
+    cursor: pointer;
+}
+
+#save-profile-button:hover {
+    background: #005bb5;
+    transform: scale(1.05);
+}
+
+.certificate-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+}
+
+.delete-btn {
+    background: red;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background 0.3s ease;
+}
+
+.delete-btn:hover {
+    background: darkred;
+}

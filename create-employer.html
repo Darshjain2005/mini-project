@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Employer Account</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Create Employer Account</h2>
+        <form id="create-employer-form">
+            <div class="input-group">
+                <label for="company-name">Company Name</label> 
+                <input type="text" id="company-name" name="company_name" required> 
+            </div>
+            <div class="input-group">
+                <label for="employer-email">Email</label>
+                <input type="email" id="employer-email" name="email" required>
+            </div>
+            <div class="input-group">
+                <label for="employer-username">Username</label>
+                <input type="text" id="employer-username" name="username" required>
+            </div>
+            <div class="input-group">
+                <label for="employer-password">Password</label>
+                <input type="password" id="employer-password" name="password" required>
+                <ul id="password-guidelines">
+                    <li id="min-char">At least 8 characters</li>
+                    <li id="uppercase">At least one uppercase letter</li>
+                    <li id="lowercase">At least one lowercase letter</li>
+                    <li id="special-char">At least one special character</li>
+                </ul>
+            </div>
+            <button type="submit">Create Employer Account</button>
+        </form>
+        <p>Already have an employer account? <a href="login.html">Login here</a></p>
+    </div>
+    <script src="employer.js"></script>
+</body>
+</html>
